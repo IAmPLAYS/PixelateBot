@@ -1,0 +1,32 @@
+{
+  "name": "PixelateBot",
+  "version": "1.1.0",
+  "description": "PixelateBot is a multifunction bot that you will love",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: No test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "alexflipnote.js": "^1.2.6",
+    "app": "^0.1.0",
+    "canvacord": "^5.0.7",
+    "child-exec": "^1.0.0",
+    "dblapi.js": "^2.4.1",
+    "discord.js": "^12.3.1",
+    "express": "^4.17.1",
+    "figlet": "^1.5.0",
+    "mathjs": "^7.5.1",
+    "moment": "^2.29.1",
+    "mongoose": "^5.10.9",
+    "node-fetch": "^2.6.1",
+    "querystring": "^0.2.0",
+    "quick.db": "^7.1.2",
+    "string-toolkit": "^1.0.93",
+    "thum.io": "^1.0.9",
+    "util": "^0.12.3",
+    "ytsr": "^1.0.4"
+  }
+}
