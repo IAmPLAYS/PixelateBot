@@ -1,10 +1,16 @@
-const { Client, MessageEmbed } = require('discord.js');
+const { Client, MessageEmbed, MessageAttachment } = require('discord.js');
 const db = require('quick.db')
 const { Token } = require('./config.json');
 const commands = require('./commands.js');
+const ytdl = require('ytdl-core')
+const owner = [
+	'727545540186865754',
+	'749896471213637683'
+	]
 
 
 const client = new Client();
+const queue = new Map();
 
 client.on('ready', () => { 
 	console.log(`logged in as \n${client.user.tag}`);
@@ -27,6 +33,7 @@ client.on('message', async message => {
 
 	const args = message.content.slice(prefix.length).trim().split(/ +/)
 	const cmd = args.shift().toLowerCase();
+	const serverQueue = queue.get(message.guild.id)
 
 	switch(cmd) {
 
@@ -108,6 +115,7 @@ client.on('message', async message => {
 	.addField('Servers', `${client.guilds.cache.size}`, true)
 	.addField('Channels', `${client.channels.cache.size}`, true)
 	.addField('Users', `${client.users.cache.size}`, true)
+	.addFields('Links', [])
 	message.channel.send(embed)
 	break;
 
@@ -115,11 +123,6 @@ client.on('message', async message => {
 	case 'run':
 	const { inspect } = require('util')
 	let command = args.slice(0).join(' ')
-
-	const owner = [
-	'727545540186865754',
-	'749896471213637683'
-	]
 
 		
 		if(!owner.includes(message.author.id)) return message.channel.send('Sorry, this command is for the developers only!');
@@ -150,6 +153,8 @@ client.on('message', async message => {
 		case 'exec':
 		case 'console':
 		const { exec } = require('child_process');
+		if(!owner.includes(message.author.id)) return message.channel.send('nou');
+		if(!args.join(' ')) return message.channel.send('Please add some commands to execute!');
 		
 
 const ls = exec(`${args.join(' ')}`, function (error, stdout, stderr) {
@@ -170,7 +175,160 @@ const ls = exec(`${args.join(' ')}`, function (error, stdout, stderr) {
 	}
 });
 break;
-}});
+
+case 'vote':
+var embed = new MessageEmbed()
+		.setTitle('Vote me from DBL\'s')
+		.setColor('skyblue')
+		.addField('discord-botlist.eu', `[Vote me here](http://discord-botlist.eu/bots/761576107887034388/vote "Vote me now")`, true)
+		.setFooter(`${client.user.username} v1.2`, `${client.user.displayAvatarURL()}`)
+		.setTimestamp();
+		message.channel.send(embed)
+		break;
+
+	case 'wide':
+		let member = message.mentions.users.first() || message.author;
+
+		let avatar = args.slice(0).join(' ') || member.displayAvatarURL();
+
+		var atch = new MessageAttachment(`http://vacefron.nl/api/wide?image=${avatar}`, 'wide.png');
+		message.channel.send(atch)
+		break;
+
+		case 'bad': 
+        var embed = new MessageEmbed()
+        .setTitle(`${member} is **bad**`)
+        .setColor('#FF0000')
+        .setImage(`http://api.alexflipnote.dev/bad?image=${avatar}`);
+        message.channel.send(embed)
+		break;
+
+		case 'facts':
+		let repeater = args.join('%20');
+		if(!repeater) return message.channel.send('Please add some text to make a facts');
+		let URL = `https://api.alexflipnote.dev/facts?text=`
+		let att = new MessageAttachment(URL.replace(" ", "%20").replace(" ", "%20")+repeater, 'facts.png')
+		message.channel.send(att);
+		break;
+
+		case 'captcha':
+		if(!args.join('%20')) return message.channel.send('Pllease add some text to make a captcha text')
+		let fURL = `https://api.alexflipnote.dev/captcha?text=`
+		var atch = new MessageAttachment(fURL.replace(" ", "%20").replace(" ", "%20")+args.join('+'), 'captcha.png')
+		message.channel.send(atch);
+		break;
+
+		case 'emergencymeeting':
+		case 'emergency':
+		if(!args.join('%20')) return message.channel.send('Pllease add some text to make a name to ejected text')
+		let url = `https://vacefron.nl/api/emergencymeeting?text=`
+		var atch = new MessageAttachment(url.replace(" ", "%20").replace(" ", "%20")+args.join('+'), 'amongus-ejected.png')
+		message.channel.send(atch);
+		break;
+		
+		case 'playstore':
+		case 'play-store':
+		case 'app':
+			const PlayStore = require("google-play-scraper")
+if (!args[0])
+      return message.channel.send(
+        `Please Give Something To Search - ${message.author.username}`
+      );
+
+    PlayStore.search({
+      term: args.join(" "),
+      num: 1
+    }).then(Data => {
+      let App;
+
+      try {
+        App = JSON.parse(JSON.stringify(Data[0]));
+      } catch (error) {
+        return message.channel.send(
+          `No Application Found - ${message.author.username}!`
+        );
+      }
+
+      let Embed = new MessageEmbed()
+        .setColor("GOLD")
+        .setThumbnail(App.icon)
+        .setURL(App.url)
+        .setTitle(`${App.title}`)
+        .setDescription(App.summary)
+        .addField(`Price`, App.priceText, true)
+        .addField(`Developer`, App.developer, true)
+		.addField('Folder', App.appId, true)
+        .addField(`Ratings`, App.scoreText, true)
+        .setFooter(`Requested By ${message.author.username}`)
+        .setTimestamp();
+
+      return message.channel.send(Embed);
+    });
+		break;
+
+		case 'play':
+		const voiceChannel = message.member.voice.channel
+		if(!voiceChannel) return message.channel.send(`**${message.author.username}**, You need to join any voice channel first.`);
+		const permissions = voiceChannel.permissionsFor(message.client.user);
+		if(!permissions.has('CONNECT')) return message.channel.send('Sorry but, I do not have permission to connect to the  voice channel!');
+		if(!permissions.has('SPEAK')) return message.channel.send(`**${message.author.username}**, Sorry but i do not hav permission to sepak to the voice channel!`)
+
+		const songInfo = await ytdl.getInfo(args[0])
+		const song = {
+			title: songInfo.videoDetails.title,
+			url: songInfo.videoDetails.video_url
+		}
+
+		if(!serverQueue) {
+			const queueConstruct = {
+				textChannel: message.channel,
+				voiceChannel: voiceChannel,
+				connection: null,
+				songs: [],
+				volume: 10,
+				playing: true
+			}
+			queue.set(message.guild.id, queueConstruct)
+
+			queueConstruct.songs.push(song)
+			try{
+			var connection = await voiceChannel.join()
+			queueConstruct.connection = connection
+			play(message.guild, queueConstruct.songs[0])
+		} catch(err){
+			console.log('There was an error while connecting to the voice channel \n'+err)
+			}
+		} else {
+			serverQueue.songs.push(song)
+			return message.channel.send(`**${song.title}**, has been added to queue!`)
+		}
+	return undefined;
+		break;
+
+		case 'stop':
+		if(!message.member.voice.channel) return message.channel.send(`**${message.author.username}**, You need oto join any voice channel first to stop the music!`);
+		message.member.voice.channel.leave()
+		return undefined;
+	}});
+
+	function play(guild, song){
+		const serverQueue= queue.get(guild.id)
+
+		if(!song )
+			serverQueue.voiceChannel.leave()
+			queue.delete(guild.id)
+			return
+
+		const dispatcher = serverQueue.connection.play(ytdl(song.url))
+		.on('finish', () => {
+			serverQueue.songs.shift()
+			play(guild, serverQueue.songs[0])
+		})
+		.on('error', error => {
+			console.log(error)
+		})
+		dispatcher.setVolumeLogarithmic(serverQueue.volume / 10)
+	}
 
 require('./server')();
 client.login(Token);
